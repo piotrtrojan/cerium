@@ -56,6 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Implementations\CeriumDbContext.cs" />
+    <Compile Include="Implementations\CeriumUser.cs" />
+    <Compile Include="Implementations\CeriumUserStore.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
