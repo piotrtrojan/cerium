@@ -1,4 +1,5 @@
-﻿using Cerium.AspNetDemo.Models;
+﻿using Cerium.AspNetDemo.IdentityImplementations;
+using Cerium.AspNetDemo.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
@@ -11,8 +12,8 @@ namespace Cerium.AspNetDemo.Controllers
 {
     public class AccountController : Controller
     {
-        public UserManager<IdentityUser> UserManager => HttpContext.GetOwinContext().Get<UserManager<IdentityUser>>();
-        public SignInManager<IdentityUser, string> SignInManager => HttpContext.GetOwinContext().Get<SignInManager<IdentityUser, string>>();
+        public UserManager<ExtendedUser> UserManager => HttpContext.GetOwinContext().Get<UserManager<ExtendedUser>>();
+        public SignInManager<ExtendedUser, string> SignInManager => HttpContext.GetOwinContext().Get<SignInManager<ExtendedUser, string>>();
 
         [HttpGet]
         public ActionResult Login()
@@ -43,12 +44,18 @@ namespace Cerium.AspNetDemo.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(RegisterModel model)
         {
-            var user = await UserManager.FindByNameAsync(model.Username);
-            if (user != null)
+            var userInDb = await UserManager.FindByNameAsync(model.Username);
+            if (userInDb != null)
             {
                 return RedirectToAction("Index", "Home");
             }
-            var registrationResult = await UserManager.CreateAsync(new IdentityUser(model.Username), model.Paswsword);
+            var extendedUser = new ExtendedUser
+            {
+                UserName = model.Username,
+                FullName = model.FullName,
+            };
+            extendedUser.Addresses.Add(new Address { AddressLine = model.AddressLine, Country = model.Country, UserId = extendedUser.Id });
+            var registrationResult = await UserManager.CreateAsync(extendedUser, model.Paswsword);
             if (registrationResult.Succeeded)
             {
                 return RedirectToAction("Index", "Home");

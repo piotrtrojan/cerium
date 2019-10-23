@@ -236,6 +236,9 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="IdentityImplementations\Address.cs" />
+    <Compile Include="IdentityImplementations\ExtendedUser.cs" />
+    <Compile Include="IdentityImplementations\ExtendedUserDbContext.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\RegisterModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
