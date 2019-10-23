@@ -1,0 +1,13 @@
+﻿@model Cerium.AspNetDemo.Models.RegisterModel
+
+<h1>Registration</h1>
+<hr/>
+@using (Html.BeginForm("Register", "Account", FormMethod.Post))
+{
+    @Html.ValidationSummary()
+    @Html.LabelFor(x => x.Username) @Html.TextBoxFor(x => x.Username)
+    <br />
+    @Html.LabelFor(x => x.Paswsword) @Html.PasswordFor(x => x.Paswsword)
+    <br />
+    <input class="btn" type="submit" value="Register" />
+}
