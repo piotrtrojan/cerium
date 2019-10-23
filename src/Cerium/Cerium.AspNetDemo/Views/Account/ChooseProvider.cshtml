@@ -1,0 +1,9 @@
+﻿@model Cerium.AspNetDemo.Models.ChooseProviderModel
+
+<h1>Choose Provider</h1>
+<hr />
+@using (Html.BeginForm("ChooseProvider", "Account", FormMethod.Post))
+{
+    <p>Provider: @Html.DropDownListFor(x => x.ChosenProvider, Model.Providers.Select(y => new SelectListItem { Value = y, Text = y }).ToList()) </p>
+    <input class="btn" value="Submit" type="submit"/>
+}

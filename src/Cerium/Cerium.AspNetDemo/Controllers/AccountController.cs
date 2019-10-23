@@ -1,7 +1,6 @@
 ﻿using Cerium.AspNetDemo.IdentityImplementations;
 using Cerium.AspNetDemo.Models;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,10 +28,49 @@ namespace Cerium.AspNetDemo.Controllers
             {
                 case SignInStatus.Success:
                     return RedirectToAction("Index", "Home");
+                case SignInStatus.RequiresVerification:
+                    return RedirectToAction("ChooseProvider");
                 default:
                     ModelState.AddModelError("", "Invalid Credentials");
                     return View(model);
             }
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> ChooseProvider(ChooseProviderModel model)
+        {
+            await SignInManager.SendTwoFactorCodeAsync(model.ChosenProvider);
+            return RedirectToAction("TwoFactor", new { Provider = model.ChosenProvider });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> TwoFactor(string provider)
+        {
+            return View(new TwoFactorModel { Provider = provider });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> TwoFactor(TwoFactorModel model)
+        {
+            var signInStatus = SignInManager.TwoFactorSignIn(model.Provider, model.Code, true, model.RememberBrowser);
+            switch (signInStatus)
+            {
+                case SignInStatus.Success:
+                    return RedirectToAction("Index", "Home");
+                default:
+                    ModelState.AddModelError("", "Invalid Token");
+                    return View(model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ChooseProvider()
+        {
+            var userId = await SignInManager.GetVerifiedUserIdAsync();
+            var providers = await UserManager.GetValidTwoFactorProvidersAsync(userId);
+
+            return View(new ChooseProviderModel { Providers = providers.ToList() });
         }
 
         [HttpGet]
