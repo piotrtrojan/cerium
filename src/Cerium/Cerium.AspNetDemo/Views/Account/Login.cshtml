@@ -1,7 +1,7 @@
 ﻿@model Cerium.AspNetDemo.Models.LoginModel
 
 <h1>Login</h1>
-<hr/>
+<hr />
 @using (Html.BeginForm("Login", "Account", FormMethod.Post))
 {
     @Html.ValidationSummary()
@@ -12,3 +12,19 @@
     <input class="btn" type="submit" value="Login" />
 }
 @Html.ActionLink("Reset Password", "ForgotPassword")
+<br />
+@{ 
+    var providers = Context.GetOwinContext().Authentication.GetAuthenticationTypes(q => !string.IsNullOrEmpty(q.Caption));
+    if (providers != null && providers.Any())
+    {
+        using (Html.BeginForm("ExternalAuthentication", "Account", FormMethod.Post))
+        {
+            foreach (var provider in providers)
+            {
+                <button class="btn" value="@provider.AuthenticationType" name="provider" type="submit">
+                    @provider.Caption
+                </button>
+            }
+        }
+    }
+}

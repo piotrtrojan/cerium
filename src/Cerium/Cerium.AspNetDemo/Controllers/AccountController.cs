@@ -2,6 +2,7 @@
 using Cerium.AspNetDemo.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -37,13 +38,13 @@ namespace Cerium.AspNetDemo.Controllers
         }
         
         [HttpGet]
-        public async Task<ActionResult> TwoFactor(string provider)
+        public ActionResult TwoFactor(string provider)
         {
             return View(new TwoFactorModel { Provider = provider });
         }
 
         [HttpPost]
-        public async Task<ActionResult> TwoFactor(TwoFactorModel model)
+        public ActionResult TwoFactor(TwoFactorModel model)
         {
             var signInStatus = SignInManager.TwoFactorSignIn(model.Provider, model.Code, true, model.RememberBrowser);
             switch (signInStatus)
@@ -54,6 +55,39 @@ namespace Cerium.AspNetDemo.Controllers
                     ModelState.AddModelError("", "Invalid Token");
                     return View(model);
             }
+        }
+
+        public ActionResult ExternalAuthentication(string provider)
+        {
+            SignInManager.AuthenticationManager.Challenge(
+                new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("ExternalCallback", new { provider }),
+                }, provider);
+            return new HttpUnauthorizedResult();
+        }
+
+        public async Task<ActionResult> ExternalCallback(string provider)
+        {
+            var loginInfo = await SignInManager.AuthenticationManager.GetExternalLoginInfoAsync();
+            var signInStatus = await SignInManager.ExternalSignInAsync(loginInfo, true);
+            switch (signInStatus)
+            {
+                case SignInStatus.Success:
+                    return RedirectToAction("Index", "Home");
+                default:
+                    var user = await UserManager.FindByEmailAsync(loginInfo.Email);
+                    if (user != null)
+                    {
+                        var result = await UserManager.AddLoginAsync(user.Id, loginInfo.Login);
+                        if (result.Succeeded)
+                        {
+                            return await ExternalCallback(provider);
+                        }
+                    }
+                    return View("Error");
+            }
+
         }
 
         [HttpGet]

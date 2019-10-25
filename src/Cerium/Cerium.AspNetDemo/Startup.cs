@@ -6,6 +6,8 @@ using Owin;
 using Microsoft.Owin.Security.Cookies;
 using Cerium.AspNetDemo.IdentityImplementations;
 using System;
+using Microsoft.Owin.Security.Google;
+using System.Configuration;
 
 [assembly: OwinStartup(typeof(Cerium.AspNetDemo.Startup))]
 
@@ -45,6 +47,15 @@ namespace Cerium.AspNetDemo
             
             // Line Below enables remembering Two Factor auth cookie if user wants it.
             app.UseTwoFactorRememberBrowserCookie(DefaultAuthenticationTypes.TwoFactorCookie);
+            
+            app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions
+            {
+                ClientId = ConfigurationManager.AppSettings["GoogleAuth:Id"],
+                ClientSecret = ConfigurationManager.AppSettings["GoogleAuth:Secret"],
+                Caption = "Login with Google"
+            });
+
         }
     }
 }
