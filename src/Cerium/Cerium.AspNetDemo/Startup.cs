@@ -27,12 +27,15 @@ namespace Cerium.AspNetDemo
                         MessageFormat = "Token: {0}" 
                     });
                 userManager.SmsService = new SmsService();
+                userManager.UserTokenProvider = new DataProtectorTokenProvider<ExtendedUser>(opt.DataProtectionProvider.Create());
+                userManager.EmailService = new EmailService();
                 return userManager;
             });
             app.CreatePerOwinContext<SignInManager<ExtendedUser, string>>(
                 (opt, cont) => 
                     new SignInManager<ExtendedUser, string>(cont.Get<UserManager<ExtendedUser>>(), cont.Authentication)
             );
+
             
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
@@ -40,7 +43,7 @@ namespace Cerium.AspNetDemo
             });
             app.UseTwoFactorSignInCookie(DefaultAuthenticationTypes.TwoFactorCookie, TimeSpan.FromMinutes(5));
             
-            // Line Below forces to remember Two Factor auth cookie if user wants it.
+            // Line Below enables remembering Two Factor auth cookie if user wants it.
             app.UseTwoFactorRememberBrowserCookie(DefaultAuthenticationTypes.TwoFactorCookie);
         }
     }

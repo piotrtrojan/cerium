@@ -35,15 +35,7 @@ namespace Cerium.AspNetDemo.Controllers
                     return View(model);
             }
         }
-
-
-        [HttpPost]
-        public async Task<ActionResult> ChooseProvider(ChooseProviderModel model)
-        {
-            await SignInManager.SendTwoFactorCodeAsync(model.ChosenProvider);
-            return RedirectToAction("TwoFactor", new { Provider = model.ChosenProvider });
-        }
-
+        
         [HttpGet]
         public async Task<ActionResult> TwoFactor(string provider)
         {
@@ -73,6 +65,13 @@ namespace Cerium.AspNetDemo.Controllers
             return View(new ChooseProviderModel { Providers = providers.ToList() });
         }
 
+        [HttpPost]
+        public async Task<ActionResult> ChooseProvider(ChooseProviderModel model)
+        {
+            await SignInManager.SendTwoFactorCodeAsync(model.ChosenProvider);
+            return RedirectToAction("TwoFactor", new { Provider = model.ChosenProvider });
+        }
+
         [HttpGet]
         public ActionResult Register()
         {
@@ -89,6 +88,7 @@ namespace Cerium.AspNetDemo.Controllers
             }
             var extendedUser = new ExtendedUser
             {
+                Email = model.Username,
                 UserName = model.Username,
                 FullName = model.FullName,
             };
@@ -96,10 +96,60 @@ namespace Cerium.AspNetDemo.Controllers
             var registrationResult = await UserManager.CreateAsync(extendedUser, model.Paswsword);
             if (registrationResult.Succeeded)
             {
+                var token = await UserManager.GenerateEmailConfirmationTokenAsync(extendedUser.Id);
+                var confirmUrl = Url.Action("ConfirmEmail", "Account", new { userid = extendedUser.Id, token }, Request.Url.Scheme);
+                await UserManager.SendEmailAsync(extendedUser.Id, "Email Confirmation", $"Use link to confirm email: {confirmUrl}");
                 return RedirectToAction("Index", "Home");
             }
             ModelState.AddModelError("", registrationResult.Errors.FirstOrDefault());
             return View(model);
+        }
+
+        [HttpGet]
+        public ActionResult PasswordReset(string userId, string token)
+        {
+            return View(new PasswordResetModel { UserId = userId, Token = token });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PasswordReset(PasswordResetModel model)
+        {
+            var resetResult = await UserManager.ResetPasswordAsync(model.UserId, model.Token, model.Password);
+            if (!resetResult.Succeeded)
+            {
+                return View("Error");
+            }
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public ActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            var userInDb = await UserManager.FindByNameAsync(model.Username);
+            if (userInDb != null)
+            {
+                var token = await UserManager.GeneratePasswordResetTokenAsync(userInDb.Id);
+                var url = Url.Action("PasswordReset", "Account", new { userid = userInDb.Id, token }, Request.Url.Scheme);
+                await UserManager.SendEmailAsync(userInDb.Id, "Password reser", $"Reset password here {url}");
+            }
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ConfirmEmail(string userId, string token)
+        {
+            var confirmationResult = await UserManager.ConfirmEmailAsync(userId, token);
+            if (!confirmationResult.Succeeded)
+            {
+                return View("Error");
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

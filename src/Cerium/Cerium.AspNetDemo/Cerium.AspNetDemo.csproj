@@ -232,6 +232,9 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Models\PasswordResetModel.cs" />
+    <Compile Include="Models\ForgotPasswordModel.cs" />
+    <Compile Include="IdentityImplementations\EmailService.cs" />
     <Compile Include="Models\TwoFactorModel.cs" />
     <Compile Include="Models\ChooseProviderModel.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -287,6 +290,8 @@
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\ChooseProvider.cshtml" />
     <Content Include="Views\Account\TwoFactor.cshtml" />
+    <Content Include="Views\Account\ForgotPassword.cshtml" />
+    <Content Include="Views\Account\PasswordReset.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
