@@ -31,6 +31,15 @@ namespace Cerium.AspNetDemo.Controllers
                     return RedirectToAction("Index", "Home");
                 case SignInStatus.RequiresVerification:
                     return RedirectToAction("ChooseProvider");
+                case SignInStatus.LockedOut:
+                    var user = await UserManager.FindByNameAsync(model.Username);
+                    if (user != null && await UserManager.CheckPasswordAsync(user, model.Paswsword))
+                    {
+                        ModelState.AddModelError("", "Account Locked");
+                        return View(model);
+                    }
+                    ModelState.AddModelError("", "Invalid Credentials");
+                    return View(model);
                 default:
                     ModelState.AddModelError("", "Invalid Credentials");
                     return View(model);

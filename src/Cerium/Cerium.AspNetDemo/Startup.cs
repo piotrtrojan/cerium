@@ -31,6 +31,22 @@ namespace Cerium.AspNetDemo
                 userManager.SmsService = new SmsService();
                 userManager.UserTokenProvider = new DataProtectorTokenProvider<ExtendedUser>(opt.DataProtectionProvider.Create());
                 userManager.EmailService = new EmailService();
+                userManager.UserValidator = new UserValidator<ExtendedUser>(userManager)
+                {
+                    RequireUniqueEmail = true
+                };
+                userManager.PasswordValidator = new PasswordValidator()
+                {
+                    RequireDigit = true,
+                    RequiredLength = 8,
+                    RequireLowercase = true,
+                    RequireNonLetterOrDigit = true,
+                    RequireUppercase = true,
+                };
+                userManager.UserLockoutEnabledByDefault = true;
+                userManager.MaxFailedAccessAttemptsBeforeLockout = 2;
+                userManager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                
                 return userManager;
             });
             app.CreatePerOwinContext<SignInManager<ExtendedUser, string>>(
@@ -55,7 +71,6 @@ namespace Cerium.AspNetDemo
                 ClientSecret = ConfigurationManager.AppSettings["GoogleAuth:Secret"],
                 Caption = "Login with Google"
             });
-
         }
     }
 }
